@@ -8,6 +8,22 @@
     <meta name="google-site-verification" content="rbMDsZDEnPXvV0H4Tf0EHHgfdPQy2doXIuO_JNCV9qM" />
     <style>
 
+        :root {
+        --bg: #ffffff;
+        --text: #000000;
+        --border: #000000;
+        --card-hover: #000000;
+        --tag-bg: #f0f0f0;
+    }
+
+body.dark-mode {
+    --bg: #1b1a1a;
+    --text: #f0f0f0;
+    --border: #f0f0f0;
+    --card-hover: #f0f0f0;
+    --tag-bg: #333333;
+    }
+
         body {
             font-family: 'Courier New', Courier, monospace;
             background-color: var(--bg);
@@ -202,9 +218,12 @@
     <header>
         <h1>Project Toolsuite</h1>
         <button id="installBtn" class="dark-mode-toggle" style="right: 180px; display: none;">INSTALL APP</button>
-        <button onclick="toggleTheme()" id="themeBtn">
-            Dark Mode
-        </button>
+        <button
+    class="dark-mode-toggle"
+    onclick="toggleTheme()"
+    id="themeBtn">
+    DARK MODE
+</button>
     </header>
 
     <section class="principle-box">
@@ -383,6 +402,40 @@ Your work stays yours.</p>
             deferredPrompt = null;
         });
     });
+</script>
+    <script>
+function updateThemeButton() {
+    const btn = document.getElementById('themeBtn');
+
+    if (!btn) return;
+
+    btn.textContent =
+        document.body.classList.contains('dark-mode')
+            ? 'LIGHT MODE'
+            : 'DARK MODE';
+}
+
+function applyTheme(theme) {
+    if (theme === 'dark') {
+        document.body.classList.add('dark-mode');
+    } else {
+        document.body.classList.remove('dark-mode');
+    }
+
+    updateThemeButton();
+}
+
+function toggleTheme() {
+    const isDark = document.body.classList.contains('dark-mode');
+
+    const newTheme = isDark ? 'light' : 'dark';
+
+    localStorage.setItem('theme', newTheme);
+
+    applyTheme(newTheme);
+}
+
+applyTheme(localStorage.getItem('theme') || 'light');
 </script>
 </body>
 </html>
