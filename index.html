@@ -368,6 +368,27 @@ Your work stays yours.</p>
             return matchesSearch && matchesTag;
         });
 
+        if (query) {
+            filtered.sort((a, b) => {
+                const aName = a.name.toLowerCase();
+                const bName = b.name.toLowerCase();
+                
+                const aStarts = aName.startsWith(query);
+                const bStarts = bName.startsWith(query);
+                if (aStarts !== bStarts) return aStarts ? -1 : 1;
+                
+                const aWord = aName.includes(' ' + query);
+                const bWord = bName.includes(' ' + query);
+                if (aWord !== bWord) return aWord ? -1 : 1;
+                
+                const aIndex = aName.indexOf(query);
+                const bIndex = bName.indexOf(query);
+                if (aIndex !== bIndex) return aIndex - bIndex;
+                
+                return aName.localeCompare(bName);
+            });
+        }
+
         if (filtered.length === 0) {
             container.innerHTML = `<p style="grid-column: 1/-1; opacity: 0.5;">No tools found matching your criteria.</p>`;
             return;
