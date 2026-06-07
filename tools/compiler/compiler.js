@@ -162,10 +162,4 @@ hResizer.addEventListener('mousedown', (e) => {
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', () => document.removeEventListener('mousemove', onMove), { once: true });
 });
-
-/**
- * 5. THEME TOGGLE
- */
-document.getElementById('themeToggle').onclick = () => {
-    document.body.classList.toggle('dark-mode');
-};
+
