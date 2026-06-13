@@ -83,16 +83,22 @@ This project is built using:
 ```text
 Project-Toolsuite/
 │
+├── .github/
 ├── assets/
-├── css/
-├── js/
-├── images/
-├── sw.js
-├── index.html
+├── tools/
+├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
+├── LEADERBOARD.md
 ├── LICENSE
+├── README.md
 ├── SECURITY.md
-└── README.md
+├── contributers.html
+├── index.html
+├── manifest.json
+├── privacy.html
+├── sw.js
+├── theme.css
+└── theme.js
 ```
 
 ---
