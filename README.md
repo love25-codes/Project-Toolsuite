@@ -103,6 +103,24 @@ Project-Toolsuite/
 
 ---
 
+## Sitemap Generation
+
+The sitemap is generated from the repository structure using:
+
+```bash
+python3 scripts/generate_sitemap.py
+```
+
+Run this script whenever new tool pages or static pages are added to keep `sitemap.xml` up to date.
+
+The script automatically:
+
+- Discovers tool HTML files under `tools/`
+- Includes static pages such as the homepage, privacy page, and contributors page
+- Regenerates a valid `sitemap.xml`
+
+---
+
 ## Contributing
 
 Contributions are welcome, whether you're fixing bugs, improving documentation, or building new tools.
