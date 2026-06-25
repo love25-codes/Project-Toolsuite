@@ -176,8 +176,8 @@ See the `LICENSE` file for complete details.
 
 | Rank | Contributor | Points | Commits |
 |-----:|------------|-------:|--------:|
-| 1 | @Winter262005 | 283 | 283 |
-| 2 | @love25-codes | 23 | 23 |
+| 1 | @Winter262005 | 287 | 287 |
+| 2 | @love25-codes | 26 | 26 |
 | 3 | @VITianYash42 | 20 | 20 |
 | 4 | @rach-kanc | 14 | 14 |
 | 5 | @Ishwarpatra | 13 | 13 |
