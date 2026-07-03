@@ -176,13 +176,13 @@ See the `LICENSE` file for complete details.
 
 | Rank | Contributor | Points | Commits |
 |-----:|------------|-------:|--------:|
-| 1 | @Winter262005 | 293 | 293 |
+| 1 | @Winter262005 | 294 | 294 |
 | 2 | @love25-codes | 26 | 26 |
 | 3 | @VITianYash42 | 20 | 20 |
 | 4 | @rach-kanc | 16 | 16 |
 | 5 | @Ishwarpatra | 13 | 13 |
 | 6 | @Dru-429 | 13 | 13 |
-| 7 | @Sargam-Ghagre | 11 | 11 |
+| 7 | @Sargam-Ghagre | 12 | 12 |
 | 8 | @AdityaMittal08 | 9 | 9 |
 | 9 | @adikulkarni006 | 8 | 8 |
 | 10 | @ritiktyagiai | 8 | 8 |
