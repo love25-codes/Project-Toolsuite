@@ -656,72 +656,48 @@ document.addEventListener(
 
 
     function convertTimezone(){
-
-
-    const date =
-    document.getElementById("convertDate").value;
-
-
-
-    const time =
-    document.getElementById("convertTime").value;
-
-
-
-    const from =
-    document.getElementById("fromZone").value;
-
-
-
-    const to =
-    document.getElementById("toZone").value;
-
-
+    const date = document.getElementById("convertDate").value;
+    const time = document.getElementById("convertTime").value;
+    const from = document.getElementById("fromZone").value;
+    const to = document.getElementById("toZone").value;
 
     if(!date || !time){
-
         alert("Please select date and time");
-
         return;
-
     }
 
+    // Treat input as naive wall-clock, first as if it were UTC
+    const naiveUTC = new Date(`${date}T${time}:00Z`);
 
+    // Find what that UTC instant reads as in `from` zone
+    const fromZoneParts = new Intl.DateTimeFormat("en-US", {
+        timeZone: from,
+        year: "numeric", month: "2-digit", day: "2-digit",
+        hour: "2-digit", minute: "2-digit", second: "2-digit",
+        hourCycle: "h23"
+    }).formatToParts(naiveUTC);
 
-    const dateTime =
-    `${date}T${time}:00`;
+    const get = (type) => fromZoneParts.find(p => p.type === type).value;
+    const asIfLocal = new Date(Date.UTC(
+        get("year"), get("month") - 1, get("day"),
+        get("hour"), get("minute"), get("second")
+    ));
 
-
-
-    const sourceDate =
-    new Date(
-        dateTime
-    );
-
-
+    const offsetMs = naiveUTC.getTime() - asIfLocal.getTime();
+    const sourceDate = new Date(naiveUTC.getTime() + offsetMs);
 
     const formatted =
     new Intl.DateTimeFormat(
         "en-US",
         {
-
         timeZone:to,
-
         dateStyle:"full",
-
         timeStyle:"medium"
-
         }
-
     ).format(sourceDate);
-
-
-
     document.getElementById(
         "conversionResult"
     ).innerHTML = `
-
-
     <h3>
     Converted Time
     </h3>
