@@ -193,3 +193,30 @@
             background: var(--text);
             color: var(--bg);
         }
+
+
+        .label-row {
+    display: flex;
+    align-items: center;
+    /* justify-content: space-betw; */
+    margin-bottom: 5px;
+    margin-left: 10px;
+}
+
+.label-row label {
+    margin-bottom: 0;
+    margin-left: 10px;
+}
+
+.sample-button {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-left: 10px;
+}
+
+.sample-button:hover {
+    background-color: var(--text);
+    color: var(--bg);
+}
