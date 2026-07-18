@@ -1,5 +1,13 @@
 const input = document.getElementById("input");
 const output = document.getElementById("output");
+
+
+function restoreInputFocus(start, end) {
+  input.focus();
+  input.setSelectionRange(start, end);
+}
+
+
 function validateInput() {
   if (!input.value.trim()) {
     output.value = "";
@@ -16,12 +24,20 @@ function validateInput() {
   return true;
 }
 function transformText(style) {
+  if (!validateInput()) {
+    return;
+  }
+
+  const start = input.selectionStart;
+  const end = input.selectionEnd;
+
   const text = input.value;
 
- if (!validateInput()) {
-    return;
-}
-  output.value = [...text].map((char) => convertChar(char, style)).join("");
+  output.value = [...text]
+    .map((char) => convertChar(char, style))
+    .join("");
+
+  restoreInputFocus(start, end);
 }
 
 function toSmallCaps(text) {
@@ -107,29 +123,45 @@ notify.success("Copied to clipboard!");
 });
 
 document.getElementById("clearBtn").addEventListener("click", () => {
-  input.value = "";
-  output.value = "";
+    input.value = "";
+    output.value = "";
+    input.focus();
 });
 
 document.getElementById("smallCapsBtn").addEventListener("click", () => {
     if (!validateInput()) return;
 
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+
     output.value = toSmallCaps(input.value);
+
+    restoreInputFocus(start, end);
 });
 
-
 document.getElementById("underlineBtn").addEventListener("click", () => {
+    if (!validateInput()) return;
 
-  if (!validateInput()) return;
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+
     output.value = [...input.value]
         .map(char => char === " " ? " " : char + "\u0332")
         .join("");
+
+    restoreInputFocus(start, end);
 });
 
 
 document.getElementById("strikeBtn").addEventListener("click", () => {
-  if (!validateInput()) return;
+    if (!validateInput()) return;
+
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+
     output.value = [...input.value]
         .map(char => char === " " ? " " : char + "\u0336")
         .join("");
+
+    restoreInputFocus(start, end);
 });
