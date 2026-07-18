@@ -91,10 +91,7 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
   if (!output.value) return;
 
   await navigator.clipboard.writeText(output.value);
-
-  if (window.showNotification) {
-    showNotification("Copied to clipboard!", "success");
-  }
+notify.success("Copied to clipboard!");
 });
 
 document.getElementById("clearBtn").addEventListener("click", () => {
