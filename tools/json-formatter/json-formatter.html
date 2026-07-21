@@ -76,6 +76,10 @@ header p {
     color: var(--color-muted);
 }
 
+#themeBtn{
+    top:5px;
+}
+
 /*Sections*/
 section {
     margin-top: var(--space-lg);
@@ -170,16 +174,25 @@ button:active {
 }
 
 /*Footer */
-footer {
-    margin-top: var(--space-xl);
-    font-size: var(--text-sm);
-}
+        footer {
+            text-align: center;
+            border-radius: 12px 12px 0 0;
+        }
 
-hr {
-    border: none;
-    border-top: 1px solid var(--color-border);
-    margin: var(--space-lg) 0;
-}
+        footer a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 900;
+            border: 2px solid var(--border);
+            padding: 8px 16px;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+
+        footer a:hover {
+            background: var(--text);
+            color: var(--bg);
+        }
 
 /*Links*/
 a {
@@ -222,7 +235,7 @@ a:hover {
         <h1>Secure JSON Formatter</h1>
         <p>Validate, beautify, and minify JSON locally. Zero data transfer.</p>
     
-        <button class="dark-mode-toggle" onclick="toggleTheme()" id="themeBtn">DARK MODE</button></header>
+        <button class="dark-mode-toggle" onclick="toggleTheme()" id="themeBtn" aria-label="Toggle theme">DARK MODE</button></header>
 
     <main>
         <section>
@@ -256,8 +269,7 @@ a:hover {
     </main>
 
     <footer>
-        <hr>
-        <p><a href="../../index.html">← Back to Home</a></p>
+        <a href="../../index.html">← Back to Home</a>
     </footer>
 
     <script src="json-logic.js"></script>

@@ -15,24 +15,7 @@
     <link rel="stylesheet" href="../../assets/css/notifications.css">
     <script src="../../assets/js/notifications.js" defer></script>
     <style>
-
-        :root {
-            --bg: #ffffff;
-            --text: #000000;
-            --border: var(--border);
-            --error: #ff4d4d;
-            --warn: #fbbf24;
-            --success: #22c55e;
-            --tag-bg: #f0f0f0;
-        }
-
-        body.dark-mode {
-            --bg: #1b1a1a;
-            --text: #f0f0f0;
-            --border: #f0f0f0;
-            --tag-bg: #333333;
-        }
-
+        
         body {
             font-family: 'Courier New', Courier, monospace;
             background-color: var(--bg);
@@ -54,24 +37,6 @@
         }
 
         h1 { font-size: 2.2rem; text-transform: uppercase; margin: 0 0 10px; }
-        
-        .dark-mode-toggle {
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: var(--text);
-            color: var(--bg);
-            border: 2px solid var(--border);
-            padding: 8px 16px;
-            font-family: inherit;
-            font-weight: 900;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: 4px 4px 0px var(--border);
-            transition: transform 0.1s;
-        }
-        
-        .dark-mode-toggle:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px var(--border); }
 
         .input-group {
             display: flex;
@@ -184,6 +149,56 @@
             font-weight: bold;
         }
 
+        footer {
+            margin-top: 60px;
+            padding: 30px 20px;
+            text-align: center;
+            border-radius: 12px 12px 0 0;
+        }
+
+        footer a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 900;
+            border: 2px solid var(--border);
+            padding: 8px 16px;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+
+        footer a:hover {
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        .result-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.copy-btn {
+    padding: 5px 12px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: bold;
+    background: var(--text);
+    color: var(--bg);
+    border: 2px solid var(--border);
+    cursor: pointer;
+    box-shadow: 3px 3px 0px var(--border);
+    transition: transform 0.1s;
+}
+
+.copy-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px var(--border);
+}
+        .clear-btn {
+    background: var(--bg) !important;
+    color: var(--text) !important;
+}
     
     </style>
     <link rel="stylesheet" href="../../theme.css">
@@ -194,19 +209,48 @@
     <header>
         <h1>Email Validator</h1>
         <p>Offline-first analysis for syntax, typos, disposable domains, and role-based addresses.</p>
-        <button id="themeBtn" class="dark-mode-toggle" onclick="toggleTheme()">DARK MODE</button>
+        <button id="themeBtn" aria-label="Toggle theme" class="dark-mode-toggle" onclick="toggleTheme()">DARK MODE</button>
     </header>
 
-    <div class="input-group">
-        <input type="text" id="emailInput" placeholder="ENTER EMAIL ADDRESS (e.g. hello@example.com)..." onkeypress="handleEnter(event)">
-        <button class="action-btn" onclick="validateEmail()">ANALYZE</button>
-    </div>
+   <div class="input-group">
+    <input
+        type="text"
+        id="emailInput"
+        placeholder="ENTER EMAIL ADDRESS (e.g. hello@example.com)..."
+        onkeypress="handleEnter(event)"
+        oninput="toggleClearButton()"
+    >
+
+     <button
+        id="clearBtn"
+        class="action-btn clear-btn"
+        onclick="clearEmail()"
+        style="display: none;"
+    >
+        CLEAR
+    </button>
+
+    <button class="action-btn" onclick="validateEmail()">ANALYZE</button>
+
+   
+</div>
 
     <div class="results-card" id="resultsCard">
-        <div class="result-header">
-            <span>Analysis Result</span>
-            <span class="status-badge" id="overallStatus">PENDING</span>
-        </div>
+      <div class="result-header">
+    <span>Analysis Result</span>
+
+    <div class="result-actions">
+        <span class="status-badge" id="overallStatus">PENDING</span>
+
+        <button
+            id="copyResultBtn"
+            class="copy-btn"
+            onclick="copyAnalysisResult()"
+        >
+            COPY
+        </button>
+    </div>
+</div>
         
         <ul class="check-list">
             <li class="check-item">
@@ -244,12 +288,9 @@
         <a href="../../index.html">&larr; Back to Home</a>
     </footer>
     <script src="email-validator.js"></script>
+    <script src="../../theme.js"></script>
     <script>
         // Theme initialization
-
-
-
-        
         function handleEnter(e) {
             if (e.key === 'Enter') {
                 validateEmail();

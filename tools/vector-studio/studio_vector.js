@@ -13,7 +13,8 @@ class VectorEngine {
         this.shapes = [];
         this.tool = 'select';
         this.isDragging = false;
-        this.selection = null;
+      this.selection = null;
+this.selectedShapes = [];
         this.dragStart = { x: 0, y: 0 };
         this.currentShape = null;
         this.dragStartState = null;
@@ -33,6 +34,114 @@ class VectorEngine {
         console.log(">> VECTOR ENGINE INITIALIZED");
     }
 
+    resetGeometry() {
+    if (this.selectedShapes.length !== 1) {
+        return;
+    }
+
+    const shape = this.selectedShapes[0];
+
+    this.saveState();
+
+    if (
+        ['rect', 'oval', 'diamond', 'parallelogram']
+            .includes(shape.type)
+    ) {
+        shape.x = 0;
+        shape.y = 0;
+        shape.w = 100;
+        shape.h = 100;
+    }
+
+    else if (shape.type === 'circle') {
+        shape.x = 0;
+        shape.y = 0;
+        shape.r = 50;
+    }
+
+    else if (['line', 'arrow'].includes(shape.type)) {
+        shape.x = 0;
+        shape.y = 0;
+        shape.ex = 100;
+        shape.ey = 100;
+    }
+
+    else if (shape.type === 'text') {
+        shape.x = 0;
+        shape.y = 0;
+    }
+
+    this.saveToLocalStorage();
+    this.updatePropsUI();
+}
+
+isSelected(shape) {
+    return this.selectedShapes.includes(shape);
+}
+
+clearSelection() {
+    this.selectedShapes = [];
+    this.selection = null;
+    this.updatePropsUI();
+}
+selectSingle(shape) {
+    this.selectedShapes = [shape];
+    this.selection = shape;
+}
+
+toggleSelection(shape) {
+    const index = this.selectedShapes.indexOf(shape);
+
+    if (index === -1) {
+        this.selectedShapes.push(shape);
+    } else {
+        this.selectedShapes.splice(index, 1);
+    }
+
+    // Keep selection pointing to the most recently selected shape
+    this.selection =
+        this.selectedShapes.length > 0
+            ? this.selectedShapes[this.selectedShapes.length - 1]
+            : null;
+}
+
+duplicateSelected() {
+    if (this.selectedShapes.length === 0) {
+        alert("No shape selected. Please select a shape to duplicate.");
+        return;
+    }
+
+    this.saveState();
+
+    const offset = 20;
+
+    const duplicatedShapes = this.selectedShapes.map(shape => {
+        const duplicate = JSON.parse(
+            JSON.stringify(shape)
+        );
+
+        duplicate.x += offset;
+        duplicate.y += offset;
+
+        if (['line', 'arrow'].includes(duplicate.type)) {
+            duplicate.ex += offset;
+            duplicate.ey += offset;
+        }
+
+        return duplicate;
+    });
+
+    this.shapes.push(...duplicatedShapes);
+
+    this.selectedShapes = duplicatedShapes;
+
+    this.selection =
+        duplicatedShapes[duplicatedShapes.length - 1];
+
+    this.saveToLocalStorage();
+    this.updatePropsUI();
+}
+
     // --- MATH UTILS ---
 
     snap(val) {
@@ -51,6 +160,94 @@ class VectorEngine {
         }
         return inside;
     }
+
+    createGeometryInput(label, id, value, type = 'number') {
+    return `
+        <div class="prop-group">
+            <label class="prop-label" for="${id}">${label}</label>
+            <input
+                type="${type}"
+                id="${id}"
+                class="prop-input"
+                value="${value ?? ''}"
+            >
+        </div>
+    `;
+}
+
+
+attachGeometryListeners() {
+    const bindInput = (id, callback) => {
+        const input = document.getElementById(id);
+
+        if (!input) return;
+
+        input.addEventListener('change', () => {
+            if (this.selectedShapes.length !== 1) return;
+
+            this.saveState();
+
+            callback(
+                this.selectedShapes[0],
+                input.value
+            );
+
+            this.saveToLocalStorage();
+
+            this.updatePropsUI();
+        });
+    };
+
+    const getMinimumGeometryValue = (value) => {
+        const parsedValue = parseFloat(value);
+
+        if (!Number.isFinite(parsedValue)) {
+            return 1;
+        }
+
+        return Math.max(1, parsedValue);
+    };
+
+    bindInput('geometryX', (shape, value) => {
+        shape.x = parseFloat(value) || 0;
+    });
+
+    bindInput('geometryY', (shape, value) => {
+        shape.y = parseFloat(value) || 0;
+    });
+
+    bindInput('geometryWidth', (shape, value) => {
+        shape.w = getMinimumGeometryValue(value);
+    });
+
+    bindInput('geometryHeight', (shape, value) => {
+        shape.h = getMinimumGeometryValue(value);
+    });
+
+    bindInput('geometryRadius', (shape, value) => {
+        shape.r = getMinimumGeometryValue(value);
+    });
+
+    bindInput('geometryX1', (shape, value) => {
+        shape.x = parseFloat(value) || 0;
+    });
+
+    bindInput('geometryY1', (shape, value) => {
+        shape.y = parseFloat(value) || 0;
+    });
+
+    bindInput('geometryX2', (shape, value) => {
+        shape.ex = parseFloat(value) || 0;
+    });
+
+    bindInput('geometryY2', (shape, value) => {
+        shape.ey = parseFloat(value) || 0;
+    });
+
+    bindInput('geometryText', (shape, value) => {
+        shape.text = value;
+    });
+}
 
     distToSegment(p, v, w) {
         const l2 = (v.x - w.x) ** 2 + (v.y - w.y) ** 2;
@@ -136,23 +333,44 @@ class VectorEngine {
             const my = e.offsetY;
 
             if (this.tool === 'select') {
-                const hit = this.hitTest(mx, my);
-                if (hit) {
-                    this.dragStartState = JSON.parse(JSON.stringify(this.shapes));
-                    this.selection = hit;
-                    this.isDragging = true;
-                    // Store offset relative to shape origin
-                    this.dragStart = { x: mx, y: my, ox: hit.x, oy: hit.y };
+    const hit = this.hitTest(mx, my);
 
-                    if (['line', 'arrow'].includes(hit.type)) {
-                        this.dragStart.oex = hit.ex;
-                        this.dragStart.oey = hit.ey;
-                    }
-                    this.updatePropsUI();
-                } else {
-                    this.selection = null;
-                }
-            } else {
+    if (hit) {
+
+        this.dragStartState = JSON.parse(JSON.stringify(this.shapes));
+
+        // Shift/Ctrl = add/remove from selection
+        if (e.shiftKey || e.ctrlKey || e.metaKey) {
+            this.toggleSelection(hit);
+        } else {
+            this.selectSingle(hit);
+        }
+
+       this.isDragging = true;
+
+// Store offset relative to shape origin (for dragging)
+this.dragStart = {
+    x: mx,
+    y: my,
+    ox: hit.x,
+    oy: hit.y
+};
+
+if (['line', 'arrow'].includes(hit.type)) {
+    this.dragStart.oex = hit.ex;
+    this.dragStart.oey = hit.ey;
+}
+
+this.updatePropsUI();
+
+    } else {
+
+        if (!(e.shiftKey || e.ctrlKey || e.metaKey)) {
+            this.clearSelection();
+        }
+
+    }
+} else {
                 // Start Drawing
                 this.isDragging = true;
                 const sx = this.snap(mx);
@@ -269,17 +487,35 @@ class VectorEngine {
         });
 
         // Properties Listeners
-        ['fillColor', 'strokeColor', 'strokeWidth'].forEach(id => {
-            document.getElementById(id).addEventListener('change', (e) => {
-                if (this.selection) {
-                    this.saveState();
-                    if (id === 'fillColor') this.selection.fill = e.target.value;
-                    if (id === 'strokeColor') this.selection.stroke = e.target.value;
-                    if (id === 'strokeWidth') this.selection.width = parseInt(e.target.value);
-                    this.saveToLocalStorage(); // Auto-save after property change
-                }
-            });
+['fillColor', 'strokeColor', 'strokeWidth'].forEach(id => {
+
+    document.getElementById(id).addEventListener('change', (e) => {
+
+        if (this.selectedShapes.length === 0) return;
+
+        this.saveState();
+
+        this.selectedShapes.forEach(shape => {
+
+            if (id === 'fillColor') {
+                shape.fill = e.target.value;
+            }
+
+            if (id === 'strokeColor') {
+                shape.stroke = e.target.value;
+            }
+
+            if (id === 'strokeWidth') {
+                shape.width = parseInt(e.target.value);
+            }
+
         });
+
+        this.saveToLocalStorage();
+
+    });
+
+});
     }
 
     // --- RENDERING ---
@@ -303,9 +539,10 @@ class VectorEngine {
         // Draw Shapes
         this.shapes.forEach(s => this.drawShape(ctx, s));
         if (this.currentShape) this.drawShape(ctx, this.currentShape);
-
-        // Draw Selection
-        if (this.selection) this.drawSelection(ctx, this.selection);
+// Draw Selection
+this.selectedShapes.forEach(shape => {
+    this.drawSelection(ctx, shape);
+});
 
         requestAnimationFrame(() => this.loop());
     }
@@ -421,11 +658,11 @@ class VectorEngine {
 
     // --- API UTILS ---
 
-    setTool(name) {
-        this.tool = name;
-        this.selection = null;
-        this.updateToolbar();
-    }
+ setTool(name) {
+    this.tool = name;
+    this.clearSelection();
+    this.updateToolbar();
+}
 
     updateToolbar() {
         document.querySelectorAll('.tool').forEach(el => el.classList.remove('active'));
@@ -434,12 +671,161 @@ class VectorEngine {
         this.canvas.style.cursor = this.tool === 'select' ? 'default' : 'crosshair';
     }
 
-    updatePropsUI() {
-        if (!this.selection) return;
-        document.getElementById('fillColor').value = this.selection.fill;
-        document.getElementById('strokeColor').value = this.selection.stroke;
-        document.getElementById('strokeWidth').value = this.selection.width;
+  updatePropsUI() {
+    const geometryPanel = document.getElementById('geometry-properties');
+
+    if (this.selectedShapes.length === 0) {
+        geometryPanel.innerHTML = '';
+        return;
     }
+
+    const first = this.selectedShapes[0];
+
+    const sameFill = this.selectedShapes.every(
+        s => s.fill === first.fill
+    );
+
+    const sameStroke = this.selectedShapes.every(
+        s => s.stroke === first.stroke
+    );
+
+    const sameWidth = this.selectedShapes.every(
+        s => s.width === first.width
+    );
+
+    document.getElementById('fillColor').value =
+        sameFill ? first.fill : '#000000';
+
+    document.getElementById('strokeColor').value =
+        sameStroke ? first.stroke : '#000000';
+
+    document.getElementById('strokeWidth').value =
+        sameWidth ? first.width : '';
+
+    // Geometry properties are only shown for a single selected shape.
+    if (this.selectedShapes.length !== 1) {
+        geometryPanel.innerHTML = `
+            <div class="prop-label">
+                Geometry editing is available for one selected shape at a time.
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+
+    if (
+        ['rect', 'oval', 'diamond', 'parallelogram']
+            .includes(first.type)
+    ) {
+        html += this.createGeometryInput(
+            'X',
+            'geometryX',
+            first.x
+        );
+
+        html += this.createGeometryInput(
+            'Y',
+            'geometryY',
+            first.y
+        );
+
+        html += this.createGeometryInput(
+            'Width',
+            'geometryWidth',
+            first.w
+        );
+
+        html += this.createGeometryInput(
+            'Height',
+            'geometryHeight',
+            first.h
+        );
+    }
+
+    else if (first.type === 'circle') {
+        html += this.createGeometryInput(
+            'X',
+            'geometryX',
+            first.x
+        );
+
+        html += this.createGeometryInput(
+            'Y',
+            'geometryY',
+            first.y
+        );
+
+        html += this.createGeometryInput(
+            'Radius',
+            'geometryRadius',
+            first.r
+        );
+    }
+
+    else if (['line', 'arrow'].includes(first.type)) {
+        html += this.createGeometryInput(
+            'X1',
+            'geometryX1',
+            first.x
+        );
+
+        html += this.createGeometryInput(
+            'Y1',
+            'geometryY1',
+            first.y
+        );
+
+        html += this.createGeometryInput(
+            'X2',
+            'geometryX2',
+            first.ex
+        );
+
+        html += this.createGeometryInput(
+            'Y2',
+            'geometryY2',
+            first.ey
+        );
+    }
+
+    else if (first.type === 'text') {
+        html += this.createGeometryInput(
+            'X',
+            'geometryX',
+            first.x
+        );
+
+        html += this.createGeometryInput(
+            'Y',
+            'geometryY',
+            first.y
+        );
+
+        html += this.createGeometryInput(
+            'Text',
+            'geometryText',
+            first.text,
+            'text'
+        );
+    }
+
+    html += `
+    <button
+        type="button"
+        class="reset-geometry-button btn"
+         style="margin-top:20px; border-color:#44ffca; color:#44ffca;"
+        onclick="app.resetGeometry()"
+    >
+        Reset Geometry
+    </button>
+`;
+
+
+    geometryPanel.innerHTML = html;
+
+    this.attachGeometryListeners();
+}
 
     saveState(state = null) {
         const stateToSave = state || JSON.parse(JSON.stringify(this.shapes));
@@ -454,7 +840,7 @@ class VectorEngine {
         if (this.undoStack.length > 0) {
             this.redoStack.push(JSON.parse(JSON.stringify(this.shapes)));
             this.shapes = this.undoStack.pop();
-            this.selection = null;
+   this.clearSelection();
             this.saveToLocalStorage(); // Auto-save after undo
         }
     }
@@ -463,7 +849,7 @@ class VectorEngine {
         if (this.redoStack.length > 0) {
             this.undoStack.push(JSON.parse(JSON.stringify(this.shapes)));
             this.shapes = this.redoStack.pop();
-            this.selection = null;
+            this.clearSelection();
             this.saveToLocalStorage(); // Auto-save after redo
         }
     }
@@ -506,20 +892,27 @@ class VectorEngine {
         console.log('localStorage cleared');
     }
 
-    deleteSelected() {
-        if (this.selection) {
-            this.saveState();
-            this.shapes = this.shapes.filter(s => s !== this.selection);
-            this.selection = null;
-            this.saveToLocalStorage(); // Auto-save after deletion
-        }
+  deleteSelected() {
+    if (this.selectedShapes.length == 0) {
+        alert("No shape selected. Please select a shape to delete.");
+        return;
     }
 
+    this.saveState();
+
+    this.shapes = this.shapes.filter(
+        shape => !this.selectedShapes.includes(shape)
+    );
+
+    this.clearSelection();
+
+    this.saveToLocalStorage();
+}
     clear() {
         if (confirm("Clear Canvas?")) {
             this.saveState();
             this.shapes = [];
-            this.selection = null;
+            this.clearSelection();
             this.clearLocalStorage(); // Clear saved shapes too
         }
     }

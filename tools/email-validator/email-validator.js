@@ -50,6 +50,28 @@ function getEditDistance(a, b) {
     return matrix[b.length][a.length];
 }
 
+
+function toggleClearButton() {
+    const input = document.getElementById('emailInput');
+    const clearBtn = document.getElementById('clearBtn');
+
+    clearBtn.style.display = input.value.length > 0 ? 'block' : 'none';
+}
+
+function clearEmail() {
+    const input = document.getElementById('emailInput');
+    const clearBtn = document.getElementById('clearBtn');
+    const resultsCard = document.getElementById('resultsCard');
+
+    input.value = '';
+    clearBtn.style.display = 'none';
+
+    // Hide previous validation results
+    resultsCard.classList.remove('visible');
+
+    // Return focus to the input field
+    input.focus();
+}
 function checkTypo(domain) {
     if (COMMON_DOMAINS.includes(domain)) return null;
     
@@ -86,8 +108,40 @@ function updateUI(id, icon, msg, isError = false, isWarn = false) {
 function applyTypo(correctedDomain) {
     const input = document.getElementById('emailInput');
     const localPart = input.value.split('@')[0];
+
     input.value = `${localPart}@${correctedDomain}`;
+
+    toggleClearButton();
     validateEmail();
+}
+
+function copyAnalysisResult() {
+    const email = document.getElementById('emailInput').value.trim();
+
+    const overallStatus = document.getElementById('overallStatus').textContent;
+    const syntaxResult = document.getElementById('syntaxMsg').textContent;
+    const typoResult = document.getElementById('typoMsg').textContent;
+    const disposableResult = document.getElementById('dispMsg').textContent;
+    const roleResult = document.getElementById('roleMsg').textContent;
+
+    const analysisText = `EMAIL VALIDATION RESULT
+=======================
+
+Input: ${email}
+Overall Status: ${overallStatus}
+
+Syntax & Format: ${syntaxResult}
+Domain Typo: ${typoResult}
+Disposable Domain: ${disposableResult}
+Role-based Address: ${roleResult}`;
+
+   navigator.clipboard.writeText(analysisText)
+        .then(() => {
+            alert('Analysis result copied to clipboard successfully.');
+        })
+        .catch(() => {
+            alert('Unable to copy analysis result to clipboard.');
+        });
 }
 
 function validateEmail() {
@@ -95,11 +149,11 @@ function validateEmail() {
     const resultsCard = document.getElementById('resultsCard');
     const typoAction = document.getElementById('typoAction');
     
-    if (!email) {
-        if(window.showNotification) window.showNotification('Please enter an email address.', 'error');
-        return;
-    }
+   if (!email) {
+        alert('No text in the input field.');
     
+    return;
+}
     resultsCard.classList.add('visible');
     typoAction.style.display = 'none';
     typoAction.innerHTML = '';

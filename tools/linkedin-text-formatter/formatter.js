@@ -1,14 +1,26 @@
 const input = document.getElementById("input");
 const output = document.getElementById("output");
+function validateInput() {
+  if (!input.value.trim()) {
+    output.value = "";
 
+    if (window.notify) {
+      notify.error("Please enter some text before formatting.");
+    } else {
+      alert("Please enter some text before formatting.");
+    }
+
+    return false;
+  }
+
+  return true;
+}
 function transformText(style) {
   const text = input.value;
 
-  if (!text.trim()) {
-    output.value = "";
+ if (!validateInput()) {
     return;
-  }
-
+}
   output.value = [...text].map((char) => convertChar(char, style)).join("");
 }
 
@@ -91,10 +103,7 @@ document.getElementById("copyBtn").addEventListener("click", async () => {
   if (!output.value) return;
 
   await navigator.clipboard.writeText(output.value);
-
-  if (window.showNotification) {
-    showNotification("Copied to clipboard!", "success");
-  }
+notify.success("Copied to clipboard!");
 });
 
 document.getElementById("clearBtn").addEventListener("click", () => {
@@ -103,16 +112,23 @@ document.getElementById("clearBtn").addEventListener("click", () => {
 });
 
 document.getElementById("smallCapsBtn").addEventListener("click", () => {
+    if (!validateInput()) return;
+
     output.value = toSmallCaps(input.value);
 });
 
+
 document.getElementById("underlineBtn").addEventListener("click", () => {
+
+  if (!validateInput()) return;
     output.value = [...input.value]
         .map(char => char === " " ? " " : char + "\u0332")
         .join("");
 });
 
+
 document.getElementById("strikeBtn").addEventListener("click", () => {
+  if (!validateInput()) return;
     output.value = [...input.value]
         .map(char => char === " " ? " " : char + "\u0336")
         .join("");
