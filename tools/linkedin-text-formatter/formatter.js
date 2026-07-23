@@ -36,12 +36,20 @@ function updateCounter() {
 input.addEventListener("input", updateCounter);
 
 function transformText(style) {
+  if (!validateInput()) {
+    return;
+  }
+
+  const start = input.selectionStart;
+  const end = input.selectionEnd;
+
   const text = input.value;
 
- if (!validateInput()) {
-    return;
-}
-  output.value = [...text].map((char) => convertChar(char, style)).join("");
+  output.value = [...text]
+    .map((char) => convertChar(char, style))
+    .join("");
+
+  restoreInputFocus(start, end);
 }
 
 function toSmallCaps(text) {
@@ -135,21 +143,34 @@ document.getElementById("clearBtn").addEventListener("click", () => {
 document.getElementById("smallCapsBtn").addEventListener("click", () => {
     if (!validateInput()) return;
 
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+
     output.value = toSmallCaps(input.value);
+
+    restoreInputFocus(start, end);
 });
 
-
 document.getElementById("underlineBtn").addEventListener("click", () => {
+    if (!validateInput()) return;
 
-  if (!validateInput()) return;
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+
     output.value = [...input.value]
         .map(char => char === " " ? " " : char + "\u0332")
         .join("");
+
+    restoreInputFocus(start, end);
 });
 
 
 document.getElementById("strikeBtn").addEventListener("click", () => {
-  if (!validateInput()) return;
+    if (!validateInput()) return;
+
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+
     output.value = [...input.value]
         .map(char => char === " " ? " " : char + "\u0336")
         .join("");
